@@ -11,3 +11,4 @@ requests==2.32.3
 retrying==1.4.2
 urllib3==2.4.0
 zipp==3.23.0
+pytest==8.3.5

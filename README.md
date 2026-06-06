@@ -10,7 +10,9 @@ This project connects to the Spotify Web API, extracts new album release data, a
 - **Silver** — cleaned and modeled into a star schema (fact + dimension tables with bridge tables for many-to-many relationships)
 - **Gold** — aggregated business-level summaries for artist performance and album growth trends
 
-**Stack:** Python, PySpark, Delta Lake, Spotify Web API
+**Stack:** Python, PySpark, Delta Lake, Spotify Web API, Docker, GitHub Actions
+
+For the full architecture diagram, see [docs/architecture.md](docs/architecture.md).
 
 ## Data Models
 
@@ -34,29 +36,31 @@ This project connects to the Spotify Web API, extracts new album release data, a
 ## Project Structure
 
 ```
+├── .github/workflows/ci.yml          # GitHub Actions CI
+├── docs/architecture.md              # Mermaid architecture diagrams
 ├── src/
 │   ├── general_functions/
-│   │   ├── spark_manager.py            # Spark session (singleton)
-│   │   ├── upsert_into_path.py         # Delta MERGE with schema evolution
-│   │   ├── read_path_into_spark.py     # Read helpers
-│   │   ├── write_into_path.py          # Write helpers
-│   │   ├── parser.py                   # API calls with retry logic
-│   │   └── access_token_generator.py   # Spotify OAuth token
+│   │   ├── spark_manager.py           # Spark session (singleton)
+│   │   ├── upsert_into_path.py        # Delta MERGE with schema evolution
+│   │   ├── read_path_into_spark.py    # Read helpers
+│   │   ├── write_into_path.py         # Write helpers
+│   │   ├── parser.py                  # API calls with retry logic
+│   │   └── access_token_generator.py  # Spotify OAuth token
 │   └── pipelines/
 │       └── album_release/
-│           ├── extraction_layer/       # Spotify API extraction
-│           ├── silver_layer/           # Transformations, data quality, profiling
-│           └── gold_layer/             # Business aggregations
+│           ├── extraction_layer/      # Spotify API extraction
+│           ├── silver_layer/          # Transformations, data quality, profiling
+│           └── gold_layer/            # Business aggregations
 ├── scripts/
-│   ├── step_01_album_release_landing_zone_ingestion.py
-│   ├── step_02_album_release_bronze_ingestion.py
-│   ├── step_03_album_release_silver_creator.py
-│   ├── step_04_album_release_gold_creator.py
-│   └── run_full_pipeline.py
-├── tests/
+│   ├── step_01 → step_04             # Individual pipeline steps
+│   └── run_full_pipeline.py           # Orchestrator
+├── tests/                             # Unit tests (pytest)
 ├── utils/
-│   └── config.py
+│   ├── config.py                      # Configuration
+│   └── logger.py                      # Logging setup
+├── Dockerfile
 ├── Makefile
+├── .env.example
 └── requirements.txt
 ```
 
@@ -72,25 +76,26 @@ This project connects to the Spotify Web API, extracts new album release data, a
 
 ```bash
 pip install -r requirements.txt
-```
-
-Set your Spotify credentials as environment variables (or in a `.env` file):
-
-```
-client_id=<your_spotify_client_id>
-client_secret=<your_spotify_client_secret>
+cp .env.example .env   # then fill in your Spotify credentials
 ```
 
 ### Running the Pipeline
 
 ```bash
 # Full pipeline
-make all
+make pipeline
 
 # Individual layers
 make bronze
 make silver
 make gold
+```
+
+### Running with Docker
+
+```bash
+docker build -t spotify-pipeline .
+docker run --env-file .env spotify-pipeline
 ```
 
 ## Highlights
@@ -102,12 +107,20 @@ make gold
 - **Data profiling** — profiles key columns in the silver layer
 - **Retry logic** — API calls use exponential backoff to handle rate limits and transient failures
 - **Broadcast joins** — small dimension tables are broadcast for efficient joins
+- **CI/CD** — GitHub Actions runs tests on every push and pull request
 
 ## Tests
 
 ```bash
-pytest tests/
+pytest tests/ -v
 ```
+
+Tests cover:
+- API parser (retries, timeouts, error handling)
+- Token generation (auth flows, error cases)
+- Upsert logic (empty DataFrames, missing PKs, null filtering)
+- Silver transformations (deduplication, derived columns, empty inputs)
+- Data quality checks (completeness thresholds, referential integrity)
 
 ## License
 

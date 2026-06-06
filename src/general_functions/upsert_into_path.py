@@ -50,7 +50,7 @@ def upsert(
         if missing_columns:
             logger.exception(
                 f"primary key columns not found in df_new, missing columns: {missing_columns}")
-            raise ValueError
+            raise ValueError(f"Primary key columns not found in DataFrame: {missing_columns}")
 
         # find if any of the rows of the primary key cols have null values
         null_count = df_new.filter(

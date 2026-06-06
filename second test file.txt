@@ -1,1 +1,0 @@
-this is the seond file for learning a bit of git.
