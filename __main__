@@ -1,0 +1,346 @@
+2025-08-20 19:19:59,869 - utils.logger - INFO - ============================================================
+2025-08-20 19:19:59,869 - utils.logger - INFO - SPOTIFY DATA PIPELINE - FULL RUN
+2025-08-20 19:19:59,870 - utils.logger - INFO - ============================================================
+2025-08-20 19:19:59,870 - utils.logger - INFO - Starting: Landing Zone Ingestion
+2025-08-20 19:20:00,112 - utils.logger - INFO - calling post api to get the access token
+2025-08-20 19:20:00,193 - utils.logger - INFO - access token generate BQBzE
+2025-08-20 19:20:00,193 - utils.logger - INFO - starting to call the api endpoint at: https://api.spotify.com/v1/browse/new-releases
+2025-08-20 19:20:00,582 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases
+2025-08-20 19:20:00,866 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=20&limit=20
+2025-08-20 19:20:01,185 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=40&limit=20
+2025-08-20 19:20:01,507 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=60&limit=20
+2025-08-20 19:20:01,834 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=80&limit=20
+2025-08-20 19:20:01,834 - utils.logger - INFO - detected 8 new results
+2025-08-20 19:20:01,838 - utils.logger - INFO - ✓ Landing Zone Ingestion completed in 2.0s
+2025-08-20 19:20:01,838 - utils.logger - INFO - Starting: Bronze Layer Creation
+2025-08-20 19:20:01,916 - utils.logger - INFO - creating a spark session...
+2025-08-20 19:20:04,056 - utils.logger - INFO - spark session created successfully
+2025-08-20 19:20:04,056 - utils.logger - INFO - start reading data at path : data/landing_zone, formt : json, options : {'multiline': True}
+2025-08-20 19:20:05,426 - utils.logger - INFO - successfully read data at data/landing_zone
+2025-08-20 19:20:05,428 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:05,428 - utils.logger - INFO - start writing data to path : data/bronze, format : delta, options : None
+2025-08-20 19:20:09,809 - utils.logger - INFO - successfully wrote data to data/bronze
+2025-08-20 19:20:09,809 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:09,809 - utils.logger - INFO - ✓ Bronze Layer Creation completed in 8.0s
+2025-08-20 19:20:09,809 - utils.logger - INFO - Starting: Silver Layer Creation
+2025-08-20 19:20:09,822 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:09,822 - utils.logger - INFO - STEP 1: Creating Fact Albums Table
+2025-08-20 19:20:09,822 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:09,822 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:20:09,841 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:20:09,841 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:11,139 - utils.logger - INFO - read 126 records at path data/bronze
+2025-08-20 19:20:11,140 - utils.logger - INFO - starting transformation
+2025-08-20 19:20:11,375 - utils.logger - INFO - writing 73 rows to path data/silver/fact_albums
+2025-08-20 19:20:11,375 - utils.logger - INFO - start writing data to path : data/silver/fact_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:20:12,485 - utils.logger - INFO - successfully wrote data to data/silver/fact_albums
+2025-08-20 19:20:12,485 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:12,486 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:12,486 - utils.logger - INFO - STEP 2: Creating Artist Dimensions
+2025-08-20 19:20:12,486 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:12,486 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:20:12,492 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:20:12,492 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:12,859 - utils.logger - INFO - Read 126 album records from data/bronze
+2025-08-20 19:20:12,900 - utils.logger - INFO - Found 126 albums with artist information
+2025-08-20 19:20:12,901 - utils.logger - INFO - Starting artist extraction
+2025-08-20 19:20:13,043 - utils.logger - INFO - Extracted 78 unique artists from 126 albums
+2025-08-20 19:20:13,044 - utils.logger - INFO - Created 133 album-artist relationships
+2025-08-20 19:20:13,044 - utils.logger - INFO - Average artists per album: 1.06
+2025-08-20 19:20:13,044 - utils.logger - INFO - Average albums per artist: 1.71
+2025-08-20 19:20:13,044 - utils.logger - INFO - Writing 78 unique artists to data/silver/dim_artists
+2025-08-20 19:20:13,044 - utils.logger - INFO - start writing data to path : data/silver/dim_artists, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:20:13,968 - utils.logger - INFO - successfully wrote data to data/silver/dim_artists
+2025-08-20 19:20:13,968 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:13,968 - utils.logger - INFO - Dimension table write completed successfully
+2025-08-20 19:20:13,968 - utils.logger - INFO - Writing 133 relationships to data/silver/bridge_artists_albums
+2025-08-20 19:20:13,968 - utils.logger - INFO - start writing data to path : data/silver/bridge_artists_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:20:14,731 - utils.logger - INFO - successfully wrote data to data/silver/bridge_artists_albums
+2025-08-20 19:20:14,731 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:14,731 - utils.logger - INFO - Bridge table write completed successfully
+2025-08-20 19:20:14,732 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:14,732 - utils.logger - INFO - STEP 3: Creating Image Dimensions
+2025-08-20 19:20:14,732 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:14,732 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:20:14,738 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:20:14,738 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:15,029 - utils.logger - INFO - Read 126 album records from data/bronze
+2025-08-20 19:20:15,060 - utils.logger - INFO - Found 126 albums with image information
+2025-08-20 19:20:15,060 - utils.logger - INFO - Starting image extraction
+2025-08-20 19:20:15,381 - utils.logger - INFO - Extracted 231 unique images from 126 albums
+2025-08-20 19:20:15,381 - utils.logger - INFO - Created 378 album-image relationships
+2025-08-20 19:20:15,381 - utils.logger - INFO - Average images per album: 3.00
+2025-08-20 19:20:15,381 - utils.logger - INFO - Found 0 images used across multiple albums
+2025-08-20 19:20:15,381 - utils.logger - INFO - Writing 231 unique images to data/silver/dim_images
+2025-08-20 19:20:15,381 - utils.logger - INFO - start writing data to path : data/silver/dim_images, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:20:16,235 - utils.logger - INFO - successfully wrote data to data/silver/dim_images
+2025-08-20 19:20:16,235 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:16,235 - utils.logger - INFO - Dimension table write completed successfully
+2025-08-20 19:20:16,235 - utils.logger - INFO - Writing 378 relationships to data/silver/bridge_images_albums
+2025-08-20 19:20:16,235 - utils.logger - INFO - start writing data to path : data/silver/bridge_images_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:20:16,937 - utils.logger - INFO - successfully wrote data to data/silver/bridge_images_albums
+2025-08-20 19:20:16,938 - utils.logger - INFO - write function call ended
+2025-08-20 19:20:16,938 - utils.logger - INFO - Bridge table write completed successfully
+2025-08-20 19:20:16,939 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:16,939 - utils.logger - INFO - STEP 4: Validating Results
+2025-08-20 19:20:16,939 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:16,939 - utils.logger - INFO - Loading silver layer tables for validation
+2025-08-20 19:20:16,939 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:20:16,944 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:20:16,944 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:16,944 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:20:16,948 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:20:16,948 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:16,948 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:20:16,953 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:20:16,953 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:16,953 - utils.logger - INFO - Running validation 1: Checking orphaned artist records
+2025-08-20 19:20:18,208 - utils.logger - INFO - PASSED: No orphaned artist records found
+2025-08-20 19:20:18,208 - utils.logger - INFO - Running validation 2: Checking album_id uniqueness
+2025-08-20 19:20:18,974 - utils.logger - INFO - PASSED: All album_ids are unique
+2025-08-20 19:20:18,974 - utils.logger - INFO - Running validation 3: Checking row count ratios
+2025-08-20 19:20:19,213 - utils.logger - INFO - PASSED: Bridge table (133) has >= rows than dim_artists (78)
+2025-08-20 19:20:19,213 - utils.logger - INFO - Running validation 4: Checking for null artist_ids
+2025-08-20 19:20:19,325 - utils.logger - INFO - PASSED: No null artist_ids found
+2025-08-20 19:20:19,325 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:19,325 - utils.logger - INFO - VALIDATION SUMMARY
+2025-08-20 19:20:19,325 - utils.logger - INFO - ==================================================
+2025-08-20 19:20:19,325 - utils.logger - INFO - Overall result: PASSED
+2025-08-20 19:20:19,325 - utils.logger - INFO - Validation details: {'orphaned_artists_count': 0, 'duplicate_albums_count': 0, 'artist_count': 78, 'bridge_artist_count': 133, 'null_artist_ids_count': 0}
+2025-08-20 19:20:19,325 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:20:19,330 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:20:19,330 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:19,546 - utils.logger - INFO - PASSED: 100.0% of albums have release_date
+2025-08-20 19:20:19,546 - utils.logger - INFO - Pipeline completed successfully in 0:00:09.724121
+2025-08-20 19:20:19,547 - utils.logger - INFO - ✓ Silver Layer Creation completed in 9.7s
+2025-08-20 19:20:19,547 - utils.logger - INFO - Starting: Gold Layer Creation
+2025-08-20 19:20:19,550 - utils.logger - INFO - ============================================================
+2025-08-20 19:20:19,550 - utils.logger - INFO - Starting Gold Layer Pipeline
+2025-08-20 19:20:19,550 - utils.logger - INFO - ============================================================
+2025-08-20 19:20:19,550 - utils.logger - INFO - Creating Artist Album Summary table...
+2025-08-20 19:20:19,550 - utils.logger - INFO - Loading silver layer tables
+2025-08-20 19:20:19,550 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:20:19,555 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:20:19,556 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:19,556 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:20:19,559 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:20:19,559 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:19,559 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:20:19,562 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:20:19,562 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:19,959 - utils.logger - INFO - Created summary for 78 artists
+2025-08-20 19:20:19,960 - utils.logger - INFO - Upserting data to data/gold/gold_artists
+2025-08-20 19:20:21,181 - utils.logger - INFO - checking if a table exists at path data/gold/gold_artists
+2025-08-20 19:20:21,267 - utils.logger - INFO - an existing table found at the given path, performing merge ...
+2025-08-20 19:20:21,275 - utils.logger - INFO - starting the merge operation .... 
+2025-08-20 19:20:23,431 - utils.logger - INFO - Merge completed - Inserted: 18, Updated: 60, Deleted: 0
+2025-08-20 19:20:23,432 - utils.logger - INFO - Upsert results: {'rows_inserted': 18, 'rows_updated': 60, 'rows_deleted': 0}
+2025-08-20 19:20:23,432 - utils.logger - INFO - Artist album summary creation completed successfully
+2025-08-20 19:20:23,432 - utils.logger - INFO - Optimizing table with Z-ORDER
+2025-08-20 19:20:25,321 - utils.logger - INFO - Z-ORDER optimization completed successfully
+2025-08-20 19:20:25,322 - utils.logger - INFO - ✓ Artist Summary created in 5.8s
+2025-08-20 19:20:25,322 - utils.logger - INFO - Creating Artist Growth Metrics table...
+2025-08-20 19:20:25,322 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:20:25,326 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:20:25,327 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:25,327 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:20:25,330 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:20:25,330 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:25,330 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:20:25,333 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:20:25,333 - utils.logger - INFO - read function call ended
+2025-08-20 19:20:25,333 - utils.logger - INFO - all dataframes read successfully
+2025-08-20 19:20:25,917 - utils.logger - INFO - aggregation logic applied successfully
+2025-08-20 19:20:27,086 - utils.logger - INFO - checking if a table exists at path data/gold/gold_artist_growth
+2025-08-20 19:20:27,144 - utils.logger - INFO - an existing table found at the given path, performing merge ...
+2025-08-20 19:20:27,151 - utils.logger - INFO - starting the merge operation .... 
+2025-08-20 19:20:28,661 - utils.logger - INFO - Merge completed - Inserted: 18, Updated: 60, Deleted: 0
+2025-08-20 19:20:28,663 - utils.logger - INFO - 
+                    Pipeline Performance:
+                    - Total: 3.3s
+                    - Read: 0.0s
+                    - Process: 0.6s (78 rows)
+                    - Write: 2.7s
+                    - Throughput: 23 rows/sec
+                    
+2025-08-20 19:20:28,663 - utils.logger - INFO - ✓ Artist Growth created in 3.3s
+2025-08-20 19:20:28,663 - utils.logger - INFO -   - Processed 23 rows/sec
+2025-08-20 19:20:28,663 - utils.logger - INFO - ============================================================
+2025-08-20 19:20:28,663 - utils.logger - INFO - Gold Layer Pipeline Summary
+2025-08-20 19:20:28,663 - utils.logger - INFO - Total Duration: 9.1s
+2025-08-20 19:20:28,663 - utils.logger - INFO - Tables Created: 2/2
+2025-08-20 19:20:28,663 - utils.logger - INFO - ✓ All gold tables created successfully!
+2025-08-20 19:20:28,663 - utils.logger - INFO - ============================================================
+2025-08-20 19:20:28,663 - utils.logger - INFO - ✓ Gold Layer Creation completed in 9.1s
+2025-08-20 19:20:28,663 - utils.logger - INFO - Pipeline completed successfully in 28.8s
+2025-08-20 19:44:39,250 - utils.logger - INFO - Starting: Landing Zone Ingestion
+2025-08-20 19:44:39,346 - utils.logger - INFO - calling post api to get the access token
+2025-08-20 19:44:39,439 - utils.logger - INFO - access token generate BQBql
+2025-08-20 19:44:39,439 - utils.logger - INFO - starting to call the api endpoint at: https://api.spotify.com/v1/browse/new-releases
+2025-08-20 19:44:39,851 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases
+2025-08-20 19:44:40,356 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=20&limit=20
+2025-08-20 19:44:40,684 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=40&limit=20
+2025-08-20 19:44:41,030 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=60&limit=20
+2025-08-20 19:44:41,506 - utils.logger - INFO - a new get call to url: https://api.spotify.com/v1/browse/new-releases?offset=80&limit=20
+2025-08-20 19:44:41,507 - utils.logger - INFO - detected 8 new results
+2025-08-20 19:44:41,512 - utils.logger - INFO - ✓ Landing Zone Ingestion completed in 2.3s
+2025-08-20 19:44:41,512 - utils.logger - INFO - Starting: Bronze Layer Creation
+2025-08-20 19:44:41,589 - utils.logger - INFO - creating a spark session...
+2025-08-20 19:44:43,770 - utils.logger - INFO - spark session created successfully
+2025-08-20 19:44:43,770 - utils.logger - INFO - start reading data at path : data/landing_zone, formt : json, options : {'multiline': True}
+2025-08-20 19:44:45,077 - utils.logger - INFO - successfully read data at data/landing_zone
+2025-08-20 19:44:45,077 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:45,077 - utils.logger - INFO - start writing data to path : data/bronze, format : delta, options : None
+2025-08-20 19:44:49,373 - utils.logger - INFO - successfully wrote data to data/bronze
+2025-08-20 19:44:49,373 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:49,373 - utils.logger - INFO - ✓ Bronze Layer Creation completed in 7.9s
+2025-08-20 19:44:49,373 - utils.logger - INFO - Starting: Silver Layer Creation
+2025-08-20 19:44:49,382 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:49,382 - utils.logger - INFO - STEP 1: Creating Fact Albums Table
+2025-08-20 19:44:49,382 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:49,382 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:44:49,393 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:44:49,393 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:50,608 - utils.logger - INFO - read 126 records at path data/bronze
+2025-08-20 19:44:50,608 - utils.logger - INFO - starting transformation
+2025-08-20 19:44:50,800 - utils.logger - INFO - writing 73 rows to path data/silver/fact_albums
+2025-08-20 19:44:50,800 - utils.logger - INFO - start writing data to path : data/silver/fact_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:44:51,822 - utils.logger - INFO - successfully wrote data to data/silver/fact_albums
+2025-08-20 19:44:51,822 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:51,825 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:51,825 - utils.logger - INFO - STEP 2: Creating Artist Dimensions
+2025-08-20 19:44:51,825 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:51,825 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:44:51,834 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:44:51,834 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:52,141 - utils.logger - INFO - Read 126 album records from data/bronze
+2025-08-20 19:44:52,186 - utils.logger - INFO - Found 126 albums with artist information
+2025-08-20 19:44:52,186 - utils.logger - INFO - Starting artist extraction
+2025-08-20 19:44:52,329 - utils.logger - INFO - Extracted 78 unique artists from 126 albums
+2025-08-20 19:44:52,329 - utils.logger - INFO - Created 133 album-artist relationships
+2025-08-20 19:44:52,329 - utils.logger - INFO - Average artists per album: 1.06
+2025-08-20 19:44:52,329 - utils.logger - INFO - Average albums per artist: 1.71
+2025-08-20 19:44:52,329 - utils.logger - INFO - Writing 78 unique artists to data/silver/dim_artists
+2025-08-20 19:44:52,329 - utils.logger - INFO - start writing data to path : data/silver/dim_artists, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:44:53,337 - utils.logger - INFO - successfully wrote data to data/silver/dim_artists
+2025-08-20 19:44:53,338 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:53,338 - utils.logger - INFO - Dimension table write completed successfully
+2025-08-20 19:44:53,338 - utils.logger - INFO - Writing 133 relationships to data/silver/bridge_artists_albums
+2025-08-20 19:44:53,338 - utils.logger - INFO - start writing data to path : data/silver/bridge_artists_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:44:54,102 - utils.logger - INFO - successfully wrote data to data/silver/bridge_artists_albums
+2025-08-20 19:44:54,102 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:54,102 - utils.logger - INFO - Bridge table write completed successfully
+2025-08-20 19:44:54,103 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:54,103 - utils.logger - INFO - STEP 3: Creating Image Dimensions
+2025-08-20 19:44:54,103 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:54,103 - utils.logger - INFO - start reading data at path : data/bronze, formt : delta, options : None
+2025-08-20 19:44:54,108 - utils.logger - INFO - successfully read data at data/bronze
+2025-08-20 19:44:54,108 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:54,396 - utils.logger - INFO - Read 126 album records from data/bronze
+2025-08-20 19:44:54,428 - utils.logger - INFO - Found 126 albums with image information
+2025-08-20 19:44:54,428 - utils.logger - INFO - Starting image extraction
+2025-08-20 19:44:54,730 - utils.logger - INFO - Extracted 231 unique images from 126 albums
+2025-08-20 19:44:54,730 - utils.logger - INFO - Created 378 album-image relationships
+2025-08-20 19:44:54,730 - utils.logger - INFO - Average images per album: 3.00
+2025-08-20 19:44:54,730 - utils.logger - INFO - Found 0 images used across multiple albums
+2025-08-20 19:44:54,730 - utils.logger - INFO - Writing 231 unique images to data/silver/dim_images
+2025-08-20 19:44:54,730 - utils.logger - INFO - start writing data to path : data/silver/dim_images, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:44:55,588 - utils.logger - INFO - successfully wrote data to data/silver/dim_images
+2025-08-20 19:44:55,588 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:55,588 - utils.logger - INFO - Dimension table write completed successfully
+2025-08-20 19:44:55,588 - utils.logger - INFO - Writing 378 relationships to data/silver/bridge_images_albums
+2025-08-20 19:44:55,588 - utils.logger - INFO - start writing data to path : data/silver/bridge_images_albums, format : delta, options : {'overwriteSchema': 'true'}
+2025-08-20 19:44:56,335 - utils.logger - INFO - successfully wrote data to data/silver/bridge_images_albums
+2025-08-20 19:44:56,336 - utils.logger - INFO - write function call ended
+2025-08-20 19:44:56,336 - utils.logger - INFO - Bridge table write completed successfully
+2025-08-20 19:44:56,336 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:56,336 - utils.logger - INFO - STEP 4: Validating Results
+2025-08-20 19:44:56,336 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:56,336 - utils.logger - INFO - Loading silver layer tables for validation
+2025-08-20 19:44:56,336 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:44:56,352 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:44:56,352 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:56,352 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:44:56,360 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:44:56,360 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:56,360 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:44:56,365 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:44:56,365 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:56,365 - utils.logger - INFO - Running validation 1: Checking orphaned artist records
+2025-08-20 19:44:57,534 - utils.logger - INFO - PASSED: No orphaned artist records found
+2025-08-20 19:44:57,534 - utils.logger - INFO - Running validation 2: Checking album_id uniqueness
+2025-08-20 19:44:58,311 - utils.logger - INFO - PASSED: All album_ids are unique
+2025-08-20 19:44:58,311 - utils.logger - INFO - Running validation 3: Checking row count ratios
+2025-08-20 19:44:58,586 - utils.logger - INFO - PASSED: Bridge table (133) has >= rows than dim_artists (78)
+2025-08-20 19:44:58,586 - utils.logger - INFO - Running validation 4: Checking for null artist_ids
+2025-08-20 19:44:58,706 - utils.logger - INFO - PASSED: No null artist_ids found
+2025-08-20 19:44:58,706 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:58,706 - utils.logger - INFO - VALIDATION SUMMARY
+2025-08-20 19:44:58,706 - utils.logger - INFO - ==================================================
+2025-08-20 19:44:58,706 - utils.logger - INFO - Overall result: PASSED
+2025-08-20 19:44:58,706 - utils.logger - INFO - Validation details: {'orphaned_artists_count': 0, 'duplicate_albums_count': 0, 'artist_count': 78, 'bridge_artist_count': 133, 'null_artist_ids_count': 0}
+2025-08-20 19:44:58,707 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:44:58,711 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:44:58,711 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:58,936 - utils.logger - INFO - PASSED: 100.0% of albums have release_date
+2025-08-20 19:44:58,936 - utils.logger - INFO - Pipeline completed successfully in 0:00:09.554218
+2025-08-20 19:44:58,936 - utils.logger - INFO - ✓ Silver Layer Creation completed in 9.6s
+2025-08-20 19:44:58,936 - utils.logger - INFO - Starting: Gold Layer Creation
+2025-08-20 19:44:58,939 - utils.logger - INFO - ============================================================
+2025-08-20 19:44:58,939 - utils.logger - INFO - Starting Gold Layer Pipeline
+2025-08-20 19:44:58,939 - utils.logger - INFO - ============================================================
+2025-08-20 19:44:58,939 - utils.logger - INFO - Creating Artist Album Summary table...
+2025-08-20 19:44:58,939 - utils.logger - INFO - Loading silver layer tables
+2025-08-20 19:44:58,939 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:44:58,944 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:44:58,944 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:58,944 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:44:58,947 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:44:58,947 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:58,947 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:44:58,949 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:44:58,949 - utils.logger - INFO - read function call ended
+2025-08-20 19:44:59,443 - utils.logger - INFO - Created summary for 78 artists
+2025-08-20 19:44:59,444 - utils.logger - INFO - Upserting data to data/gold/gold_artists
+2025-08-20 19:45:00,757 - utils.logger - INFO - checking if a table exists at path data/gold/gold_artists
+2025-08-20 19:45:00,946 - utils.logger - INFO - an existing table found at the given path, performing merge ...
+2025-08-20 19:45:00,955 - utils.logger - INFO - starting the merge operation .... 
+2025-08-20 19:45:03,095 - utils.logger - INFO - Merge completed - Inserted: 0, Updated: 78, Deleted: 0
+2025-08-20 19:45:03,096 - utils.logger - INFO - Upsert results: {'rows_inserted': 0, 'rows_updated': 78, 'rows_deleted': 0}
+2025-08-20 19:45:03,096 - utils.logger - INFO - Artist album summary creation completed successfully
+2025-08-20 19:45:03,096 - utils.logger - INFO - Optimizing table with Z-ORDER
+2025-08-20 19:45:04,347 - utils.logger - INFO - Z-ORDER optimization completed successfully
+2025-08-20 19:45:04,347 - utils.logger - INFO - ✓ Artist Summary created in 5.4s
+2025-08-20 19:45:04,347 - utils.logger - INFO - Creating Artist Growth Metrics table...
+2025-08-20 19:45:04,347 - utils.logger - INFO - start reading data at path : data/silver/fact_albums, formt : delta, options : None
+2025-08-20 19:45:04,352 - utils.logger - INFO - successfully read data at data/silver/fact_albums
+2025-08-20 19:45:04,352 - utils.logger - INFO - read function call ended
+2025-08-20 19:45:04,352 - utils.logger - INFO - start reading data at path : data/silver/bridge_artists_albums, formt : delta, options : None
+2025-08-20 19:45:04,355 - utils.logger - INFO - successfully read data at data/silver/bridge_artists_albums
+2025-08-20 19:45:04,356 - utils.logger - INFO - read function call ended
+2025-08-20 19:45:04,356 - utils.logger - INFO - start reading data at path : data/silver/dim_artists, formt : delta, options : None
+2025-08-20 19:45:04,359 - utils.logger - INFO - successfully read data at data/silver/dim_artists
+2025-08-20 19:45:04,359 - utils.logger - INFO - read function call ended
+2025-08-20 19:45:04,359 - utils.logger - INFO - all dataframes read successfully
+2025-08-20 19:45:04,873 - utils.logger - INFO - aggregation logic applied successfully
+2025-08-20 19:45:06,029 - utils.logger - INFO - checking if a table exists at path data/gold/gold_artist_growth
+2025-08-20 19:45:06,085 - utils.logger - INFO - an existing table found at the given path, performing merge ...
+2025-08-20 19:45:06,090 - utils.logger - INFO - starting the merge operation .... 
+2025-08-20 19:45:08,747 - utils.logger - INFO - Merge completed - Inserted: 0, Updated: 78, Deleted: 0
+2025-08-20 19:45:08,749 - utils.logger - INFO - 
+                    Pipeline Performance:
+                    - Total: 4.4s
+                    - Read: 0.0s
+                    - Process: 0.5s (78 rows)
+                    - Write: 3.9s
+                    - Throughput: 18 rows/sec
+                    
+2025-08-20 19:45:08,749 - utils.logger - INFO - ✓ Artist Growth created in 4.4s
+2025-08-20 19:45:08,749 - utils.logger - INFO -   - Processed 18 rows/sec
+2025-08-20 19:45:08,749 - utils.logger - INFO - ============================================================
+2025-08-20 19:45:08,749 - utils.logger - INFO - Gold Layer Pipeline Summary
+2025-08-20 19:45:08,749 - utils.logger - INFO - Total Duration: 9.8s
+2025-08-20 19:45:08,749 - utils.logger - INFO - Tables Created: 2/2
+2025-08-20 19:45:08,749 - utils.logger - INFO - ✓ All gold tables created successfully!
+2025-08-20 19:45:08,749 - utils.logger - INFO - ============================================================
+2025-08-20 19:45:08,749 - utils.logger - INFO - ✓ Gold Layer Creation completed in 9.8s
