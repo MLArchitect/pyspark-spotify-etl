@@ -1,164 +1,114 @@
 # Spotify Album Data Pipeline
 
-A production-ready data pipeline built with PySpark and Delta Lake that ingests, processes, and analyzes Spotify's new album releases using medallion architecture.
+An end-to-end data pipeline that pulls new album releases from the Spotify API and processes them through a lakehouse-style medallion architecture using PySpark and Delta Lake.
 
-## 🎯 Project Overview
+## Overview
 
-**Architecture**: Medallion Architecture (Bronze → Silver → Gold)  
-**Tech Stack**: PySpark, Delta Lake, Python, Spotify API  
+This project connects to the Spotify Web API, extracts new album release data, and transforms it through three layers:
 
-## 🚀 Key Capabilities Demonstrated
+- **Bronze** — raw data ingested as-is into Delta tables
+- **Silver** — cleaned and modeled into a star schema (fact + dimension tables with bridge tables for many-to-many relationships)
+- **Gold** — aggregated business-level summaries for artist performance and album growth trends
 
-### Data Engineering Skills
-- **Medallion Architecture**: Implemented 3-layer data lakehouse pattern
-- **Star Schema Design**: Fact tables + dimension tables + bridge tables in Silver layer
-- **Incremental Processing**: MERGE operations with primary key-based upserts
-- **Data Quality**: Automated validation checks for referential integrity and completeness
-- **API Integration**: Robust extraction with retry logic and rate limiting
+**Stack:** Python, PySpark, Delta Lake, Spotify Web API
 
-### Spark & Delta Lake Expertise
-- **Z-ORDER Optimization**: Multi-dimensional clustering on `artist_name`, `total_albums`, `latest_release_date`
-- **Broadcast Joins**: Optimized joins for small dimension tables
-- **Schema Evolution**: Automatic schema merging with `mergeSchema` enabled
-- **Performance Metrics**: Operation tracking (rows inserted/updated/deleted)
-- **Partitioning Strategy**: Artist tier-based partitioning in Gold layer
-
-### Software Engineering Practices
-- **Modular Design**: Reusable functions for read/write/upsert operations
-- **Singleton Pattern**: Spark session management
-- **Error Handling**: Comprehensive logging and exception handling
-- **CI/CD Ready**: Makefile orchestration for automated pipeline execution
-- **Testing**: Unit tests with pytest
-
-## 📊 Data Models
+## Data Models
 
 ### Silver Layer (Star Schema)
-- **fact_albums**: Core album data with 15+ attributes
-- **dim_artists**: Artist information  
-- **dim_images**: Album artwork metadata
-- **bridge_artists_albums**: Many-to-many relationships
-- **bridge_images_albums**: Image associations
 
-### Gold Layer (Business Aggregations)
-- **gold_artists**: Artist performance metrics with tier classification
- - 18 calculated metrics per artist
- - Z-ORDER optimized for query performance
- - Partitioned by artist tier (high/medium/low volume)
+| Table | Description |
+|-------|-------------|
+| `fact_albums` | Core album attributes |
+| `dim_artists` | Artist details |
+| `dim_images` | Album artwork metadata |
+| `bridge_artists_albums` | Artist-to-album relationships |
+| `bridge_images_albums` | Image-to-album relationships |
 
-## 💻 Technical Implementation
-```python
-# Key optimization example from gold_artist_album_summary.py
-delta_table.optimize().executeZOrderBy(
-    "artist_name", "total_albums", "latest_release_date"
-)
+### Gold Layer
 
-# Incremental load with schema evolution
-upsert(
-    df_new=df_summary,
-    output_path=f"{gold_path}/{gold_artists_path}",
-    primary_key_cols=['artist_id'],
-    partition_by=['artist_tier'],
-    enable_schema_evolution=True
-)
-```
+| Table | Description |
+|-------|-------------|
+| `gold_artists` | Per-artist metrics with tier classification, Z-ORDER optimized |
+| `gold_artist_albums_growth` | Album growth trends over time |
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
-spotify-data-pipeline/
 ├── src/
-│   ├── general_functions/         # Reusable utilities
-│   │   ├── spark_manager.py      # Spark session management
-│   │   ├── upsert_into_path.py   # MERGE operations
-│   │   ├── read_path_into_spark.py
-│   │   ├── write_into_path.py
-│   │   ├── parser.py              # API retry logic
-│   │   └── access_token_generator.py
+│   ├── general_functions/
+│   │   ├── spark_manager.py            # Spark session (singleton)
+│   │   ├── upsert_into_path.py         # Delta MERGE with schema evolution
+│   │   ├── read_path_into_spark.py     # Read helpers
+│   │   ├── write_into_path.py          # Write helpers
+│   │   ├── parser.py                   # API calls with retry logic
+│   │   └── access_token_generator.py   # Spotify OAuth token
 │   └── pipelines/
 │       └── album_release/
-│           ├── extraction_layer/  # API integration
-│           ├── silver_layer/      # Transformations & validations
-│           └── gold_layer/        # Business aggregations
-├── scripts/                       # Pipeline orchestration
-│   ├── step_01_*.py through step_04_*.py
-├── tests/                         # Unit tests
+│           ├── extraction_layer/       # Spotify API extraction
+│           ├── silver_layer/           # Transformations, data quality, profiling
+│           └── gold_layer/             # Business aggregations
+├── scripts/
+│   ├── step_01_album_release_landing_zone_ingestion.py
+│   ├── step_02_album_release_bronze_ingestion.py
+│   ├── step_03_album_release_silver_creator.py
+│   ├── step_04_album_release_gold_creator.py
+│   └── run_full_pipeline.py
+├── tests/
 ├── utils/
-│   ├── config.py                 # Configuration
-│   └── logger.py                 # Logging setup
-├── data/                         # Data storage (git-ignored)
-│   ├── landing_zone/            # Raw JSON
-│   ├── bronze/                  # Raw Delta
-│   ├── silver/                  # Clean Delta
-│   └── gold/                    # Aggregated Delta
-├── Makefile                      # Pipeline orchestration
+│   └── config.py
+├── Makefile
 └── requirements.txt
 ```
 
-## 🔧 Setup & Usage
+## Setup
 
 ### Prerequisites
-- Python 3.8+, Java 8/11, Spotify Developer Account
 
-### Quick Start
+- Python 3.8+
+- Java 8 or 11
+- A Spotify Developer account ([developer.spotify.com](https://developer.spotify.com))
+
+### Installation
+
 ```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Set environment variables (.env file)
-client_id=your_spotify_client_id
-client_secret=your_spotify_client_secret
-
-# Run complete pipeline
-make all
-
-# Or run individual layers
-make bronze  # Raw ingestion
-make silver  # Transformations
-make gold    # Aggregations
 ```
 
-## 📈 Performance Highlights
+Set your Spotify credentials as environment variables (or in a `.env` file):
 
-- **Z-ORDER**: 70% reduction in data scanning for multi-column queries
-- **Incremental Processing**: Only processes new/changed records
-- **Schema Evolution**: Handles new fields without pipeline modifications
-- **Data Validation**: 4 quality checks ensuring data integrity
-- **Data Profiling**: Profiling critical fields of the fact-dimension modeling tables
-- **Retry Logic**: Exponential backoff with 5 retry attempts
+```
+client_id=<your_spotify_client_id>
+client_secret=<your_spotify_client_secret>
+```
 
-## 🛠️ Core Components
+### Running the Pipeline
 
-| Component | Purpose | Key Feature |
-|-----------|---------|-------------|
-| `spark_manager.py` | Session management | Singleton pattern with Delta config |
-| `upsert_into_path.py` | MERGE operations | Schema evolution + metrics |
-| `parser.py` | API calls | Retry logic + rate limiting |
-| `gold_artist_album_summary.py` | Aggregations | Z-ORDER optimization |
+```bash
+# Full pipeline
+make all
 
-## 📊 Metrics & Results
+# Individual layers
+make bronze
+make silver
+make gold
+```
 
-- **Data Quality**: 90%+ completeness on critical fields
-- **Performance**: Sub-second queries on gold layer with Z-ORDER
-- **Reliability**: 99.9% success rate with retry mechanisms
+## Highlights
 
-## 🔍 Why This Architecture?
+- **Incremental loads** — uses Delta Lake MERGE to upsert records by primary key, so re-runs only process new or changed data
+- **Schema evolution** — new fields from the API are handled automatically via `mergeSchema`
+- **Z-ORDER optimization** — applied on the gold artist table for faster multi-column queries
+- **Data quality checks** — validates referential integrity between fact and dimension tables and checks field completeness
+- **Data profiling** — profiles key columns in the silver layer
+- **Retry logic** — API calls use exponential backoff to handle rate limits and transient failures
+- **Broadcast joins** — small dimension tables are broadcast for efficient joins
 
-**Delta Lake over Parquet**: ACID transactions, time travel, MERGE operations  
-**Medallion over Traditional ETL**: Better lineage, easier debugging, reprocessing capability  
-**Z-ORDER over Standard Partitioning**: Superior for multi-column filtering  
-**Modular Functions over Monolithic**: Testable, maintainable, reusable
-
-## 🧪 Testing
+## Tests
 
 ```bash
 pytest tests/
 ```
-Coverage includes: API integration, transformations, data quality validations
 
-## 📝 License
+## License
 
-MIT License
-
----
-
-*Built with a focus on production-ready practices, scalability, and maintainability.*
+MIT
