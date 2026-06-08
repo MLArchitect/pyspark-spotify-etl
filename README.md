@@ -12,7 +12,35 @@ This project connects to the Spotify Web API, extracts new album release data, a
 
 **Stack:** Python, PySpark, Delta Lake, Spotify Web API, Docker, GitHub Actions
 
-For the full architecture diagram, see [docs/architecture.md](docs/architecture.md).
+## Architecture
+
+```mermaid
+flowchart LR
+    API["Spotify Web API"] -->|JSON| LZ["Landing Zone"]
+    LZ -->|Raw JSON| B["Bronze Layer"]
+    B -->|Clean and Model| S["Silver Layer"]
+    S -->|Aggregate| G["Gold Layer"]
+
+    subgraph Silver["Silver Layer Star Schema"]
+        FA["fact_albums"]
+        DA["dim_artists"]
+        DI["dim_images"]
+        BA["bridge_artists_albums"]
+        BI["bridge_images_albums"]
+        FA --- BA --- DA
+        FA --- BI --- DI
+    end
+
+    subgraph Gold["Gold Layer Aggregations"]
+        GAS["gold_artists"]
+        GAG["gold_artist_growth"]
+    end
+
+    B --> Silver
+    Silver --> Gold
+```
+
+For the full architecture details, see [docs/architecture.md](docs/architecture.md).
 
 ## Data Models
 
